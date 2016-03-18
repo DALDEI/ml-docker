@@ -11,7 +11,7 @@
 
 usage(){
   [ $# -gt 0 ] && println "$*"
-  printf "Usage: %s [coreos|mlbuild|mlrun] <tab>" $0 
+  printf "Usage: %s [coreos|mlbuild|mlrun] <tab>\n" $0 
   exit 1;
 }
 
