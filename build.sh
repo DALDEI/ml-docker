@@ -9,42 +9,97 @@
 # 
 #  If either fail the script is aborted
 
+usagestr=("Usage:" "  $0: clean" "  $0 coreos|mlbuild|mlrun <tab>")
+images=(coreos mlbuild mlrun)
+
 usage(){
-  [ $# -gt 0 ] && println "$*"
-  printf "Usage: %s [coreos|mlbuild|mlrun] <tab>\n" $0 
+  [ $# -gt 0 ] && printf "%s\n" "$@"
+  printf "%s\n" "${usagestr[@]}"
   exit 1;
 }
 
-[ $# = 2 ] || usage
-image=$1 ; shift
-tag="$1" ; shift
+jdk=jdk.rpm
+marklogic=MarkLogic.rpm
+
+cleantmp()
+{
+   local i
+   local _f
+   for i in ${*:-${images[*]}} ; do
+     for _f in "$i"/{$jdk,$marklogic} ; do 
+     [ -f $_f ] && rm -f $_f 
+     done
+   done
+}
+clean() 
+{
+  cleantmp ${images[*]} 
+}
+
+
+# copy/link from to-image
+copyto() {
+  [ $# -eq 2 ] || usage "copyto from to $*"
+  local from="$1"
+  [ -f "$from" ] || usage "File required: $from"
+  local to="$2"
+  echo using "$from -> $to"
+  [ -f "$to" ] && rm -f "$to" ;
+  ln -f "$from" "$to" || usage "Cannot link $from to $to"
+  [ -f "$to" ] || usage "Failed to copy to $to"
+}
+
 
 getjava() {
-  jdk=$(echo jdk*.rpm)
-  [ -f "$jdk" ] || ./getjava.sh jdk.rpm || usage "cannot get java sdk"
-  ln $jdk $image
+  local j=$(echo jdk*.rpm| tail -1)
+  if [ -f "$j" ]   ; then 
+      copyto "$j" "$image/$jdk" 
+  else 
+      ./getjava.sh "$image/$jdk" || usage "cannot get java sdk"
+  fi 
+  [ -f "$image/$jdk" ] || usage "Failed to copy $image/$jdk" 
 }
 
 getml() {
-  marklogic=$(echo MarkLogic*.rpm)
-  [ -f "$marklogic" ] || ./getml.sh MarkLogic.rpm || usage "cannot get MarkLogic.rpm"
-  ln $marklogic $image
+  local m=$(echo [mM]ark[lL]ogic*.rpm|tail -1)
+  if [ -f "$m" ]  ; then
+      copyto "$m" "$image/$marklogic" 
+  else
+      ./getml.sh "$image/$marklogic" 
+  fi
+  [ -f "$image/$marklogic" ] || usage "Failed to copy $image/$marklogic" 
 }
+debug=
+case ${cmd:=${1:-help}} in 
+  clean )
+     clean ; exit ;;
+   help|--help|-h|-?)
+      usage "help" ; exit ;;
+   coreos|mlbuild|mlrun) ;; 
+  *)
+    usage "Unknown command $cmd" ;;
+esac
 
-case $image in 
+[ $# -lt 2 ] && usage "Missing argument <tag>"
+image="$cmd"
+tag="$2"
+debug=
+case $cmd in 
   mlbuild)
-    getjava && getml  
-    docker build -t "$tag" --build-arg jdk="$jdk" --build-arg marklogic="$marklogic" $image
+    cleantmp $image
+    getjava || usage "Cannot find a Java RPM"
+    getml  || usage "Cannot find a MarkLogic RPM"
+    $debug docker build -t "$tag" --build-arg jdk="$jdk" --build-arg marklogic="$marklogic" $image
     ;;
   coreos)
-    getjava 
-    docker build -t "$tag" --build-arg jdk="$jdk" $image
+    cleantmp $image
+    getjava || usage "Cannot find a Java RPM"
+    $debug docker build -t "$tag" --build-arg jdk="$jdk" $image
     ;;
   mlrun )
-    getjava && getml  
-    docker build -t "$tag" --build-arg jdk="$jdk" --build-arg marklogic="$marklogic" $image
-    ;;
-  *)
-   usage "Unknown build image $image"
+    cleantmp $image
+    getjava || usage "Cannot find a Java RPM"
+    getml  || usage "Cannot find a MarkLogic RPM"
+    $debug docker build -t "$tag" --build-arg jdk="$jdk" --build-arg marklogic="$marklogic" $image
    ;;
 esac 

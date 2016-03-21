@@ -15,22 +15,19 @@ MAINTAINER David Lee <dlee@marklogic.com>
 
 # Setup base system
 RUN yum -y update; yum clean all
-RUN yum -y install tar sudo applydeltarpm
-RUN yum install -y openssh-server
-RUN yum install -y libxml2 wget iputils iproute initscripts
+RUN yum -y install tar sudo applydeltarpm iputils iproute initscripts
 
-WORKDIR /tmp
-RUN wget http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm -O epel.rpm && \
-  yum -y install epel.rpm && rm -f epel.rpm
+RUN yum install -y http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm 
   
 # ./getjava.sh
 ARG jdk
 ADD ${jdk} /tmp/jdk.rpm
-RUN yum -y install /tmp/jdk.rpm && rm -f /tmp/jdk.rpm 
-
+RUN yum -y install /tmp/jdk.rpm 
 ENV TERM rxvt-unicode
 ENV JAVA_HOME /usr/java/latest
+RUN yum clean all ; rm -rf /tmp/*.rpm /tmp/*.log /var/log/messsages/* 
 
 # Expose MarkLogic Server ports
 EXPOSE 22 25 80 7997 7998 7999 8000 8001 8002 8002
 ENTRYPOINT [ "/bin/bash" , "-c" ]
+CMD [ "/bin/bash" , "-l" ]
