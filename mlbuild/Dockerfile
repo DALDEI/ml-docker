@@ -15,13 +15,9 @@ FROM fedora:21
 MAINTAINER David Lee <dlee@marklogic.com>
 
 # Setup base system
-RUN yum -y update; yum clean all
-RUN yum -y install tar sudo applydeltarpm
-RUN yum install -y openssh-server
-RUN yum install -y libxml2 wget iputils iproute initscripts
-
-RUN yum install -y http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm 
-  
+RUN yum -y update; yum clean all ; yum -y install deltarpm ; \
+      yum -y install http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm  \
+      tar sudo wget initscripts yum install 
 # ./getjava.sh
 ARG jdk
 ADD ${jdk} /tmp/jdk.rpm
@@ -30,33 +26,21 @@ RUN yum -y install /tmp/jdk.rpm && rm -f /tmp/jdk.rpm
 RUN adduser --gid users --uid 1000 devuser
 ADD marklogic.ini /home/devuser/.marklogic.ini
 
-# Generate ssh key
-RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
-RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
-RUN sed -ri 's/session    required     pam_loginuid.so/#session    required     pam_loginuid.so/g' /etc/pam.d/sshd
-RUN mkdir -p /root/.ssh && chown root.root /root && chmod 700 /root/.ssh
-
 # Install python and MarkLogic Python API
-RUN yum install -y python34 python3-pip
+RUN yum install -y python34 python3-pip ; /usr/bin/pip3 install --upgrade pip \
+    /usr/bin/pip3 install requests;  /usr/bin/pip3 install requests-toolbelt ; \
+    /usr/bin/pip3 install marklogic_python_api -i https://testpypi.python.org/pypi
 
-RUN /usr/bin/pip3 install --upgrade pip
-RUN /usr/bin/pip3 install requests
-RUN /usr/bin/pip3 install requests-toolbelt
-RUN /usr/bin/pip3 install marklogic_python_api -i https://testpypi.python.org/pypi
-
-
+ADD runml.sh /tmp/runml.sh
 # Install MarkLogic
 ARG marklogic
 ADD ${marklogic} /tmp/MarkLogic.rpm
-RUN yum -y install /tmp/MarkLogic.rpm
-RUN rm -f /tmp/MarkLogic.rpm
-ADD runml.sh /tmp/runml.sh
+RUN yum -y install /tmp/MarkLogic.rpm ; rm -f /tmp/MarkLogic.rpm ; \
+    mkdir /var/opt/MarkLogic ; chown daemon.daemon /var/opt/MarkLogic ; chmod ug+rwx /var/opt/MarkLogic 
 ENV MARKLOGIC_EC2_HOST 0
 ENV TERM rxvt-unicode
 ENV JAVA_HOME /usr/java/latest
-RUN mkdir /var/opt/MarkLogic ; chown daemon.daemon /var/opt/MarkLogic ; chmod ug+rwx /var/opt/MarkLogic
 VOLUME /var/opt/MarkLogic
-
 # Expose MarkLogic Server ports
 EXPOSE 22 25 80 7997 7998 7999 8000 8001 8002 8002 8003 8004 8005 8006 8007 8008 8009 8010 
 ENTRYPOINT [ "/bin/bash" , "-c" ]

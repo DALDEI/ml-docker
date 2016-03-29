@@ -26,7 +26,8 @@ cleantmp()
    local i
    local _f
    for i in ${*:-${images[*]}} ; do
-     for _f in "$i"/{$jdk,$marklogic} ; do 
+     for _f in "$i"/{$jdk,$marklogic,runml.sh} ; do 
+     echo removing $_f
      [ -f $_f ] && rm -f $_f 
      done
    done
@@ -75,7 +76,7 @@ case ${cmd:=${1:-help}} in
      clean ; exit ;;
    help|--help|-h|-?)
       usage "help" ; exit ;;
-   coreos|mlbuild|mlrun) ;; 
+   coreos|mlbuild|mlrun*) ;; 
   *)
     usage "Unknown command $cmd" ;;
 esac
@@ -84,22 +85,21 @@ esac
 image="$cmd"
 tag="$2"
 debug=
+[ -d "$image" ] || usage "Invalid build directory: $image" 
+cleantmp $image
+cp runml.sh $image/
+getjava || usage "Cannot find a Java RPM"
+
+
+trap 'cleantmp $image' EXIT
 case $cmd in 
-  mlbuild)
-    cleantmp $image
-    getjava || usage "Cannot find a Java RPM"
-    getml  || usage "Cannot find a MarkLogic RPM"
-    $debug docker build -t "$tag" --build-arg jdk="$jdk" --build-arg marklogic="$marklogic" $image
-    ;;
   coreos)
-    cleantmp $image
-    getjava || usage "Cannot find a Java RPM"
     $debug docker build -t "$tag" --build-arg jdk="$jdk" $image
     ;;
-  mlrun )
-    cleantmp $image
-    getjava || usage "Cannot find a Java RPM"
+  mlbuild|mlrun|mlrun_tools)
     getml  || usage "Cannot find a MarkLogic RPM"
     $debug docker build -t "$tag" --build-arg jdk="$jdk" --build-arg marklogic="$marklogic" $image
    ;;
+  *)
+    usage "Unknown command $cmd" ;;
 esac 

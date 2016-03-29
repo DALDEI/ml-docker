@@ -12,22 +12,19 @@
 
 FROM fedora:21
 MAINTAINER David Lee <dlee@marklogic.com>
-
-# Setup base system
-RUN yum -y update; yum clean all
-RUN yum -y install tar sudo applydeltarpm iputils iproute initscripts
-
-RUN yum install -y http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm 
-  
-# ./getjava.sh
-ARG jdk
-ADD ${jdk} /tmp/jdk.rpm
-RUN yum -y install /tmp/jdk.rpm 
+WORKDIR /dev/shm
 ENV TERM rxvt-unicode
 ENV JAVA_HOME /usr/java/latest
-RUN yum clean all ; rm -rf /tmp/*.rpm /tmp/*.log /var/log/messsages/* 
-
+# Setup base system
+RUN yum install -y deltarpm http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm 
+# ./getjava.sh
+# Use /tmp to avoid increasing the filesystem size
+ARG jdk
+ADD ${jdk} /tmp/jdk.rpm
+RUN yum -y install /tmp/jdk.rpm ;  \
+   yum clean all ; \
+   rm -rf /tmp/jdk.rpm /tmp/*.log 
+#
 # Expose MarkLogic Server ports
-EXPOSE 22 25 80 7997 7998 7999 8000 8001 8002 8002
 ENTRYPOINT [ "/bin/bash" , "-c" ]
 CMD [ "/bin/bash" , "-l" ]
