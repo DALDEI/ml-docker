@@ -26,7 +26,7 @@ cleantmp()
    local i
    local _f
    for i in ${*:-${images[*]}} ; do
-     for _f in "$i"/{$jdk,$marklogic,runml.sh} ; do 
+     for _f in "$i"/{$jdk,$marklogic} ; do 
      echo removing $_f
      [ -f $_f ] && rm -f $_f 
      done
@@ -55,8 +55,10 @@ getjava() {
   local j=$(echo jdk*.rpm| tail -1)
   if [ -f "$j" ]   ; then 
       copyto "$j" "$image/$jdk" 
-  else 
+  elif  [ -x ./getjava.sh ] ; then 
       ./getjava.sh "$image/$jdk" || usage "cannot get java sdk"
+  else
+     usage "Place an Oracle Java 8 JDK rpm in $PWD or a script named 'getjava.sh'"
   fi 
   [ -f "$image/$jdk" ] || usage "Failed to copy $image/$jdk" 
 }
@@ -65,8 +67,10 @@ getml() {
   local m=$(echo [mM]ark[lL]ogic*.rpm|tail -1)
   if [ -f "$m" ]  ; then
       copyto "$m" "$image/$marklogic" 
-  else
+  elif  [ -x ./getml.sh ] ; then 
       ./getml.sh "$image/$marklogic" 
+  else
+     usage "Place a MarkLogic rpm in $PWD or a script named 'getml.sh'"
   fi
   [ -f "$image/$marklogic" ] || usage "Failed to copy $image/$marklogic" 
 }
@@ -87,7 +91,6 @@ tag="$2"
 debug=
 [ -d "$image" ] || usage "Invalid build directory: $image" 
 cleantmp $image
-cp runml.sh $image/
 getjava || usage "Cannot find a Java RPM"
 
 
