@@ -6,11 +6,13 @@
 # if the RPM is found in the local directory it is used, otherwise
 #   getjava.sh is run to pull a Java SDK
 #   getml.sh is run to pull a ML RPM
-# 
+#
 #  If either fail the script is aborted
 
-usagestr=("Usage:" "  $0: clean" "  $0 coreos|mlbuild|mlrun <tab>")
-images=(coreos mlbuild mlrun)
+# FIXME: do a better job with tags when there's a repository
+
+usagestr=("Usage:" "  $0 clean" "  $0 coreos|builder|runner {--tag tag} {--user user} {--uid uid}")
+images=(coreos builder runner)
 
 usage(){
   [ $# -gt 0 ] && printf "%s\n" "$@"
@@ -26,17 +28,17 @@ cleantmp()
    local i
    local _f
    for i in ${*:-${images[*]}} ; do
-     for _f in "$i"/{$jdk,$marklogic} ; do 
+     for _f in "$i"/{$jdk,$marklogic} ; do
      echo removing $_f
-     [ -f $_f ] && rm -f $_f 
+     [ -f $_f ] && rm -f $_f
      done
    done
 }
-clean() 
-{
-  cleantmp ${images[*]} 
-}
 
+clean()
+{
+  cleantmp ${images[*]}
+}
 
 # copy/link from to-image
 copyto() {
@@ -50,59 +52,92 @@ copyto() {
   [ -f "$to" ] || usage "Failed to copy to $to"
 }
 
-
 getjava() {
   local j=$(echo jdk*.rpm| tail -1)
-  if [ -f "$j" ]   ; then 
-      copyto "$j" "$image/$jdk" 
-  elif  [ -x ./getjava.sh ] ; then 
+  if [ -f "$j" ]   ; then
+      copyto "$j" "$image/$jdk"
+  elif  [ -x ./getjava.sh ] ; then
       ./getjava.sh "$image/$jdk" || usage "cannot get java sdk"
   else
      usage "Place an Oracle Java 8 JDK rpm in $PWD or a script named 'getjava.sh'"
-  fi 
-  [ -f "$image/$jdk" ] || usage "Failed to copy $image/$jdk" 
+  fi
+  [ -f "$image/$jdk" ] || usage "Failed to copy $image/$jdk"
 }
 
 getml() {
   local m=$(echo [mM]ark[lL]ogic*.rpm|tail -1)
   if [ -f "$m" ]  ; then
-      copyto "$m" "$image/$marklogic" 
-  elif  [ -x ./getml.sh ] ; then 
-      ./getml.sh "$image/$marklogic" 
+      copyto "$m" "$image/$marklogic"
+  elif  [ -x ./getml.sh ] ; then
+      ./getml.sh "$image/$marklogic"
   else
      usage "Place a MarkLogic rpm in $PWD or a script named 'getml.sh'"
   fi
-  [ -f "$image/$marklogic" ] || usage "Failed to copy $image/$marklogic" 
+  [ -f "$image/$marklogic" ] || usage "Failed to copy $image/$marklogic"
 }
+
 debug=
-case ${cmd:=${1:-help}} in 
+case ${cmd:=${1:-help}} in
   clean )
      clean ; exit ;;
    help|--help|-h|-?)
       usage "help" ; exit ;;
-   coreos|mlbuild|mlrun*) ;; 
+   coreos|builder|runner*) ;;
   *)
     usage "Unknown command $cmd" ;;
 esac
 
-[ $# -lt 2 ] && usage "Missing argument <tag>"
 image="$cmd"
-tag="$2"
+shift
+
+tag=ml-docker-$cmd
+user=devuser
+uid=1000
 debug=
-[ -d "$image" ] || usage "Invalid build directory: $image" 
+while [[ $# -gt 0 ]]; do
+    key=$1
+    case $key in
+        -t|--tag)
+            shift
+            tag=$1
+            ;;
+        -u|--user)
+            shift
+            user=$1
+            ;;
+        -U|--uid)
+            shift
+            uid=$1
+            ;;
+        --debug)
+            shift
+            debug=$1
+            ;;
+        *)
+            usage "Unknown option $key"
+            ;;
+    esac
+    shift
+done
+
+[ -d "$image" ] || usage "Invalid build directory: $image"
 cleantmp $image
 getjava || usage "Cannot find a Java RPM"
 
-
 trap 'cleantmp $image' EXIT
-case $cmd in 
+
+case $cmd in
   coreos)
-    $debug docker build -t "$tag" --build-arg jdk="$jdk" $image
+    $debug docker build -t "$tag" --build-arg java="$jdk" --build-arg user="$user" --build-arg uid="$uid" $image
     ;;
-  mlbuild|mlrun|mlrun_tools)
+  builder)
     getml  || usage "Cannot find a MarkLogic RPM"
-    $debug docker build -t "$tag" --build-arg jdk="$jdk" --build-arg marklogic="$marklogic" $image
+    $debug docker build -t "$tag" --build-arg user="$user" $image
+   ;;
+  runner)
+    getml  || usage "Cannot find a MarkLogic RPM"
+    $debug docker build -t "$tag" --build-arg marklogic="$marklogic" --build-arg user="$user" $image
    ;;
   *)
     usage "Unknown command $cmd" ;;
-esac 
+esac
