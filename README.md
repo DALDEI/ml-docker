@@ -46,6 +46,11 @@ The `builder` container extends the `coreos` container with build
 tools sufficient to compilee MarkLogic Server. (Assuming, of course,
 that you have access to the sources.)
 
+There’s a single build argument:
+
+* `user` the name of the non-root user, defaults to `devuser`
+   and must be the same as the `user` passed to the `coreos` image
+
 ## Ancillary scripts
 
 Optional: two scripts exists to 'pull' these files during the build.
@@ -60,8 +65,8 @@ A build script is provided in `bin`.
 
 Usage:
 
- ./build.sh  [coreos|runner|builder] {--tag tag} {--user devuser} {--uid 1000}
+    ./build.sh [coreos|runner|builder] {--tag tag} {--user devuser} {--uid 1000}
 
-This builds one of 3 varients. You must build `coreos` first. If you specify
+This builds one of 3 variants. You must build `coreos` first. If you specify
 a tag for the `coreos` image, then you’ll have to modify the `Dockerfiles` for
 the other images.
