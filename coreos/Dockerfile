@@ -16,11 +16,12 @@ WORKDIR /tmp
 # Use /tmp to avoid increasing the filesystem size
 ARG java
 ADD ${java} /tmp/jdk.rpm
-RUN dnf -y install /tmp/jdk.rpm ;  \
-   dnf clean all ; \
-   rm -rf /tmp/jdk.rpm /tmp/*.log
+RUN dnf --setopt=deltarpm=false -y install /tmp/jdk.rpm ;  \
+    dnf --setopt=deltarpm=false clean all ; \
+    rm -rf /tmp/jdk.rpm /tmp/*.log
 
-RUN dnf -y install python-setuptools lsb initscripts sudo
+RUN dnf --setopt=deltarpm=false -y install \
+    python-setuptools lsb initscripts sudo
 
 RUN easy_install supervisor
 ADD supervisord.conf /etc/supervisord.conf

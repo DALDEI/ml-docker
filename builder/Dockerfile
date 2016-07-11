@@ -9,8 +9,8 @@
 FROM ml-docker-coreos
 MAINTAINER Norman Walsh <norman.walsh@marklogic.com>
 
-RUN dnf groupinstall -y 'Development tools'
-RUN dnf install -y --best auto-buildrequires \
+RUN dnf --setopt=deltarpm=false groupinstall -y 'Development tools'
+RUN dnf --setopt=deltarpm=false install -y --best auto-buildrequires \
     bison \
     boost \
     boost-devel \
