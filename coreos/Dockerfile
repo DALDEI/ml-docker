@@ -34,4 +34,4 @@ RUN chown root.root /etc/sudoers
 ENV TERM rxvt-unicode
 ENV JAVA_HOME /usr/java/latest
 
-CMD [ "/usr/bin/supervisord" ]
+CMD [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
