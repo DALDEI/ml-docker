@@ -122,22 +122,21 @@ done
 
 [ -d "$image" ] || usage "Invalid build directory: $image"
 cleantmp $image
-getjava || usage "Cannot find a Java RPM"
 
 trap 'cleantmp $image' EXIT
 
 case $cmd in
-  coreos)
-    $debug docker build -t "$tag" --build-arg java="$jdk" --build-arg user="$user" --build-arg uid="$uid" $image
-    ;;
-  builder)
-    getml  || usage "Cannot find a MarkLogic RPM"
-    $debug docker build -t "$tag" --build-arg user="$user" $image
-   ;;
-  runner)
-    getml  || usage "Cannot find a MarkLogic RPM"
-    $debug docker build -t "$tag" --build-arg marklogic="$marklogic" --build-arg user="$user" $image
-   ;;
-  *)
-    usage "Unknown command $cmd" ;;
+    coreos)
+        getjava || usage "Cannot find a Java RPM"
+        $debug docker build -t "$tag" --build-arg java="$jdk" --build-arg user="$user" --build-arg uid="$uid" $image
+        ;;
+    builder)
+        $debug docker build -t "$tag" --build-arg user="$user" $image
+        ;;
+    runner)
+        getml  || usage "Cannot find a MarkLogic RPM"
+        $debug docker build -t "$tag" --build-arg marklogic="$marklogic" --build-arg user="$user" $image
+        ;;
+    *)
+        usage "Unknown command $cmd" ;;
 esac
