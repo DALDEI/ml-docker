@@ -8,7 +8,7 @@
 #
 #######################################################################
 
-FROM ml-docker-coreos
+FROM ml-docker-centos-coreos
 MAINTAINER Norman Walsh <norman.walsh@marklogic.com>
 WORKDIR /tmp
 
@@ -17,23 +17,15 @@ ENV MARKLOGIC_EC2_HOST 0
 # Install MarkLogic
 ARG marklogic
 ADD ${marklogic} /tmp/MarkLogic.rpm
-RUN dnf --setopt=deltarpm=false -y install /tmp/MarkLogic.rpm ; \
+RUN yum -y install /tmp/MarkLogic.rpm ; \
     rm -f /tmp/MarkLogic.rpm ; \
-    dnf --setopt=deltarpm=false clean all ; \
+    yum clean all ; \
     rm -rf /tmp/* /root/.history ; \
     mkdir /var/opt/MarkLogic ; \
     chown daemon.daemon /var/opt/MarkLogic ; \
     chmod ug+rwx /var/opt/MarkLogic
 
 VOLUME [ "/var/opt/MarkLogic" ]
-
-# These lines install the MarkLogic Python API. You can delete them
-# if you don't need or want the Python tools
-ARG user=devuser
-ADD marklogic.ini /home/${user}/.marklogic.ini
-RUN /usr/bin/pip3 install --upgrade pip
-RUN /usr/bin/pip3 install requests requests-toolbelt
-RUN /usr/bin/pip3 install marklogic_python_api -i https://testpypi.python.org/pypi
 
 ADD supervisord.conf /etc/supervisord.conf
 

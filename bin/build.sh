@@ -90,9 +90,9 @@ esac
 image="$cmd"
 shift
 
-tag=ml-docker-$cmd
-user=devuser
-uid=1000
+tag=ml-docker-centos-$cmd
+user=$USER
+uid=$UID
 debug=
 while [[ $# -gt 0 ]]; do
     key=$1
@@ -131,11 +131,11 @@ case $cmd in
         $debug docker build -t "$tag" --build-arg java="$jdk" --build-arg user="$user" --build-arg uid="$uid" $image
         ;;
     builder)
-        $debug docker build -t "$tag" --build-arg user="$user" $image
+        $debug docker build -t "$tag" $image
         ;;
     runner)
         getml  || usage "Cannot find a MarkLogic RPM"
-        $debug docker build -t "$tag" --build-arg marklogic="$marklogic" --build-arg user="$user" $image
+        $debug docker build -t "$tag" --build-arg marklogic="$marklogic" $image
         ;;
     *)
         usage "Unknown command $cmd" ;;
