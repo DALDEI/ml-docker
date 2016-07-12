@@ -11,12 +11,12 @@
 
 # FIXME: do a better job with tags when there's a repository
 
-tag=ml-docker-$cmd
+tagprefix=ml-docker
 user=$(id -un)
 uid=$(id -u)
 debug=
 usagestr=("Usage:" "  $0 clean" "  $0 coreos|builder|runner {--tag tag} {--user user} {--uid uid}"
-"Defaults: "  "  user:$user " "  uid:$uid" "  tag:$tag-[coreos|builder|runner]")
+"Defaults: "  "  user:$user " "  uid:$uid" "  tag:$tagprefix-[coreos|builder|runner]")
 images=(coreos builder runner)
 
 usage(){
@@ -93,6 +93,7 @@ case ${cmd:=${1:-help}} in
 esac
 
 image="$cmd"
+tag="$tagprefix-$cmd"
 shift
 
 while [[ $# -gt 0 ]]; do
