@@ -17,9 +17,9 @@ ENV MARKLOGIC_EC2_HOST 0
 # Install MarkLogic
 ARG marklogic
 ADD ${marklogic} /tmp/MarkLogic.rpm
-RUN dnf -y install /tmp/MarkLogic.rpm ; \
+RUN dnf --setopt=deltarpm=false -y install /tmp/MarkLogic.rpm ; \
     rm -f /tmp/MarkLogic.rpm ; \
-    dnf clean all ; \
+    dnf --setopt=deltarpm=false clean all ; \
     rm -rf /tmp/* /root/.history ; \
     mkdir /var/opt/MarkLogic ; \
     chown daemon.daemon /var/opt/MarkLogic ; \
