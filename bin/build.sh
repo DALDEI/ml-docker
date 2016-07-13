@@ -96,6 +96,7 @@ image="$cmd"
 tag="$tagprefix-$cmd"
 shift
 
+debug=
 while [[ $# -gt 0 ]]; do
     key=$1
     case $key in
@@ -133,12 +134,20 @@ case $cmd in
         $debug docker build -t "$tag" --build-arg java="$jdk" --build-arg user="$user" --build-arg uid="$uid" $image
         ;;
     builder)
-        $debug docker build -t "$tag" --build-arg user="$user" $image
+        $debug docker build -t "$tag" $image
         ;;
     runner)
         getml  || usage "Cannot find a MarkLogic RPM"
-        $debug docker build -t "$tag" --build-arg marklogic="$marklogic" --build-arg user="$user" $image
+        $debug docker build -t "$tag" --build-arg marklogic="$marklogic" $image
         ;;
     *)
         usage "Unknown command $cmd" ;;
 esac
+
+if [ $? -eq 0 ]  ; then 
+   printf "Successfuly built $cmd image. tag: $tag\n"
+  docker images --format='{{.Repository}}/{{.Tag}}\t{{.ID}}\t{{.Size}}\t{{.CreatedAt}}' $tag
+else
+  printf "Error building $cmd image. tag $tag\n"
+  docker inspect $tag
+fi
