@@ -8,7 +8,7 @@
 #
 #######################################################################
 
-FROM ml-docker-centos-coreos
+FROM ml-docker-coreos
 MAINTAINER Norman Walsh <norman.walsh@marklogic.com>
 WORKDIR /tmp
 
