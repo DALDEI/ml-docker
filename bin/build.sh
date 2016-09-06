@@ -138,7 +138,7 @@ case $cmd in
         ;;
     runner)
         getml  || usage "Cannot find a MarkLogic RPM"
-        $debug docker build -t "$tag" --build-arg marklogic="$marklogic" $image
+        $debug docker build --no-cache -t "$tag" --build-arg marklogic="$marklogic" $image
         ;;
     *)
         usage "Unknown command $cmd" ;;

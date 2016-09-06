@@ -6,7 +6,7 @@
 #
 #######################################################################
 
-FROM ml-docker-centos-coreos
+FROM ml-docker-coreos
 MAINTAINER Norman Walsh <norman.walsh@marklogic.com>
 
 RUN yum groupinstall -y 'Development tools' ; \
