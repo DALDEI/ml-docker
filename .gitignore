@@ -1,2 +1,8 @@
+gradle-local.properties
 *~
 *.rpm
+.gradle
+.git
+_out
+_wiki
+eng-dev-tools
