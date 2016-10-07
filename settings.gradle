@@ -1,2 +1,3 @@
-include 'ml-coreos' , 'ml-runner' , 'ml-builder'
+// include 'ml-coros'
+include 'ml-runner' , 'ml-builder'
 rootProject.name='ml-gradle'
