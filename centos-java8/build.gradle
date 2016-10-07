@@ -1,0 +1,77 @@
+/*
+ * Gradle build file to create the docker images for ML
+ */
+buildscript {
+  repositories { jcenter() }
+  dependencies { 
+    classpath 'net.saliman:gradle-properties-plugin:1.4.4'
+    classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
+  }
+}
+
+apply plugin: 'com.bmuschko.docker-remote-api'
+apply plugin: 'net.saliman.properties'
+
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+
+docker {
+ if( System.env.DOCKER_HOST != null ) {
+    url = System.env.DOCKER_HOST 
+ }
+ if( System.env.DOCKER_TLS_VERIFY != null ) {
+    certPath = new File( System.env.DOCKER_CERT_PATH )
+  }
+ registryCredentials { 
+    url = 'https://index.docker.io/v1'
+    username = registryUser
+    password = registryPassword
+    email = 'dlee@calldei.com'
+  }
+} 
+
+task buildDockerfile(type: Dockerfile ){
+  group 'build'
+  destFile = project.file('build/docker/Dockerfile')
+  outputs.file destFile
+  def epelMajor = 7
+  def epelMinor = 8
+  from 'centos:centos7'
+  maintainer "${userName} <$userEmail>"
+  workingDir '/tmp'
+ 
+  runCommand { [ 
+           "yum install -y wget tar", 
+	   "wget -nv --no-cookies --no-check-certificate --header '${jdkHeader}' ${jdkUrl}",
+           "rpm -Uvh ${jdkRpm}",
+           "rm -f ${jdkRpm}" ,
+           'yum clean all' ,
+           "yum -y install http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-${epelMajor}-${epelMinor}.noarch.rpm",
+           "java -version" 
+           ].join(" &&\\\n      ")}
+
+  environmentVariable 'JAVA_HOME','/usr/java/latest'
+  environmentVariable 'JRE_HOME', '$JAVA_HOME/jre'
+  environmentVariable 'PATH','$JAVA_HOME/bin:$JRE_HOME/bin:$PATH'
+}
+
+
+task buildImage(type:DockerBuildImage) {
+   group 'build'
+   dependsOn buildDockerfile 
+   inputDir = buildDockerfile.destFile.parentFile
+   tag =  "${project.imageName}:${project.imageTag}"
+//   quiet = true 
+}
+
+task pushImage(type:DockerPushImage) { 
+  dependsOn buildImage
+  imageName = project.imageName
+  tag = project.imageTag
+
+}
+task clean { 
+  delete project.buildDir
+
+}

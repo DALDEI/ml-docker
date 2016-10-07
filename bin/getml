@@ -1,0 +1,47 @@
+#!/bin/bash
+# NOTICE: The following references MarkLogic confidential and protected 
+# repositories.  They are not accessable to the public
+# Unauthorized use of the following is unauthorized use of the following.
+# IANAL
+#
+set -e 
+build=${1:-HEAD}
+platform=${2:-linux64-rh7}
+ROOT=$(readlink -e $(dirname $0)/.. )
+cd  $ROOT
+repo=git@github.com:daldei/eng-dev-tools.git 
+export devtools=eng-dev-tools
+export rpmtools="$devtools/rpmtools"
+if ! [ -d  $devtools/.git ]  ; then 
+   git clone $repo 
+   find $devtools -name '*.sh' -exec chmod +x {} \; 
+fi 
+
+# Get the URL
+if [ -x $rpmtools/getbuild-url.sh ]  ; then 
+  url=$($rpmtools/getbuild-url.sh ${build} $platform)
+  if [ -n "$url" ] ; then 
+     echo "RPM located at $url"
+     rpm=$(basename "$url")
+     runrpm="runner/resources/$rpm"
+     devrpm="$rpmtools/_out/$rpm"
+     [ -s "$devrpm" -a ! -f "$runrpm" ] && ln "$devrpm" "$runrpm" 
+     if [ -s "$runrpm" ] ;then 
+        echo "RPM $rpm already exists in $runrpm" 
+    else 
+      # Get the actual RPM
+      $rpmtools/getbuild.sh ${build} $platform
+      [ -f "$devrpm" ] && ln "$devrpm" "$runrpm" 
+    fi
+  fi
+fi
+
+
+if [ -f "$runrpm" ] ;then 
+   echo "using RPM $rpm in $runrpm" 
+   ls -l $runrpm
+   printf "marklogicRpm=$rpm\n" > runner/gradle-local.properties 
+else 
+  echo "Cannot find an rpm"
+  exit 1;
+fi

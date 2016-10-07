@@ -1,0 +1,32 @@
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+
+buildDockerfile {
+
+  // Use /tmp to avoid increasing the filesystem size
+  // Use exact path in /tmp to bust cach  
+  addFile 'supervisord.conf','/etc/supervisord.conf'
+
+  // Use a single RUN command for multiple commands to limit image sizes
+  runCommand { [ 
+      'yum -y install python-setuptools lsb initscripts sudo python34',
+      'easy_install supervisor',
+      'curl https://bootstrap.pypa.io/get-pip.py | python3.4' ].join(' &&\\\n  ') }
+
+  // Last 2 are for the python API
+  // if you don't need or want the Python tools', 
+  runCommand  { [ 
+      '/usr/bin/pip3 install --upgrade pip ',
+      '/usr/bin/pip3 install requests requests-toolbelt ',
+      '/usr/bin/pip3 install marklogic_python_api -i https://testpypi.python.org/pypi' ].join(' &&\\\n ') }
+
+  defaultCommand  "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" 
+}
+
+task pushImage(type:DockerPushImage) { 
+  dependsOn buildImage
+  imageName = project.imageName
+  tag = project.imageTag
+
+}

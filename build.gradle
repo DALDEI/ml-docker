@@ -1,0 +1,78 @@
+/*
+ * Gradle build file to create the docker images for ML
+ */
+
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+buildscript {
+  repositories { jcenter() }
+  dependencies { 
+    classpath 'net.saliman:gradle-properties-plugin:1.4.4'
+    classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
+  }
+}
+
+allprojects {
+  apply plugin: 'net.saliman.properties'
+  task clean(type: Delete){ 
+    delete project.buildDir
+    delete "_out"
+    delete file(".").listFiles().findAll { it =~ /.*~/}
+    delete file("runner/resources").listFiles().findAll { it =~ /.*\.rpm$/}
+ }
+}
+
+
+subprojects {
+  buildscript {
+    repositories { jcenter() }
+    dependencies { 
+      classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
+      classpath 'net.saliman:gradle-properties-plugin:1.4.4'
+    }
+  }
+  apply plugin: 'com.bmuschko.docker-remote-api'
+  docker {
+   if( System.env.DOCKER_HOST != null ) {
+      url = System.env.DOCKER_HOST 
+   }
+   if( System.env.DOCKER_TLS_VERIFY != null ) {
+      certPath = new File( System.env.DOCKER_CERT_PATH )
+    }
+  } 
+
+  task buildDockerfile(type: Dockerfile ) {
+    description "Creates the docker files used for building the image in ${-> project.name}"
+    group 'docker'
+    from "${-> project.baseImage}"
+    destFile = project.file("$buildDir/Dockerfile")
+    maintainer "${userName} <$userEmail>"
+    workingDir '/tmp'
+   }
+
+  task copyFiles( type: Copy ) {
+     dependsOn buildDockerfile 
+     from "resources"
+     into buildDir
+  }
+
+  task buildImage(type:DockerBuildImage) {
+     group 'docker'
+     dependsOn buildDockerfile , copyFiles
+     inputDir = buildDir
+     tag =  project.tag
+   }
+}
+
+project(":ml-runner").buildDockerfile.requiredProperty 'marklogicRpm'
+project(":ml-runner").buildImage.requiredProperty 'marklogicRpm'
+
+task buildRunner { 
+  dependsOn project(":ml-runner").buildImage
+}
+
+
+task buildBuilder { 
+  dependsOn project(":ml-builder").buildImage
+}

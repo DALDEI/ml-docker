@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# Run builder linking against your home directory 
+# This only works if docker is local or if the remote docker server is similarly configured
+#
+exec docker run -it --rm -v $HOME:$HOME \
+   -v /etc/passwd:/etc/passwd -v /etc/groups:/etc/groups \
+  --user=$USER ml-docker/ml-builder /bin/bash -l "$@"

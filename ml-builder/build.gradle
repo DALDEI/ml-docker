@@ -1,16 +1,10 @@
-# Adapted and hacked from all over
-#######################################################################
-#
-#  Usage:
-#    docker build -t tag  .
-#
-#######################################################################
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
-FROM ml-docker-coreos
-MAINTAINER Norman Walsh <norman.walsh@marklogic.com>
-
-RUN yum groupinstall -y 'Development tools' ; \
-    yum install -y \
+buildDockerfile {
+ runCommand { [ 
+   "yum groupinstall -y 'Development tools'", 
+   "yum install -y \
       auto-buildrequires \
       bison \
       boost \
@@ -48,11 +42,14 @@ RUN yum groupinstall -y 'Development tools' ; \
       tk-devel \
       wget \
       xz-devel \
-      zlib-devel
+      zlib-devel" ].join(" &&\\\n   ")}
 
-ADD supervisord.conf /etc/supervisord.conf
+  // Use /tmp to avoid increasing the filesystem size
+  // Use exact path in /tmp to bust cach  
+  addFile "supervisord.conf","/etc/supervisord.conf"
+  environmentVariable "MARKLOGIC_EC2_HOST","0"  
 
-# Expose MarkLogic Server ports (yer gonna build it, right?)
-EXPOSE 7997 7998 7999 8000 8001 8002 8003 8004 8005 8006 8007 8008 8009 8010
+  exposePort 7997,7998,7999,8000,8001,8002,8003,8004,8005,8006,8007,8008,8009,8010
+  defaultCommand "/usr/bin/supervisord","-c","/etc/supervisord.conf"
+}
 
-CMD [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
