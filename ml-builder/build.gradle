@@ -2,8 +2,11 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 buildDockerfile {
+ addFile "ml-run" , "/usr/local/bin"
  runCommand { [ 
-   "yum groupinstall -y 'Development tools'", 
+   'yum groups mark install "Development Tools"',
+   'yum groups mark convert "Development Tools"',
+   'yum groupinstall -y "Development tools"', 
    "yum install -y \
       auto-buildrequires \
       bison \
@@ -46,10 +49,10 @@ buildDockerfile {
 
   // Use /tmp to avoid increasing the filesystem size
   // Use exact path in /tmp to bust cach  
-  addFile "supervisord.conf","/etc/supervisord.conf"
   environmentVariable "MARKLOGIC_EC2_HOST","0"  
-
+  volume "/home" 
   exposePort 7997,7998,7999,8000,8001,8002,8003,8004,8005,8006,8007,8008,8009,8010
-  defaultCommand "/usr/bin/supervisord","-c","/etc/supervisord.conf"
+  entryPoint "/bin/sh" , "-c" 
+  defaultCommand "/usr/local/bin/ml-run"
 }
 

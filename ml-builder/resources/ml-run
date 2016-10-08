@@ -1,0 +1,15 @@
+#!/bin/bash
+# Run Builder Default command 
+# 
+
+function stopml() 
+{
+  trap 'stopml' SIGINT SIGHUP SIGTERM SIGKILL
+  exit 0
+}
+
+trap 'stopml' SIGINT SIGHUP SIGTERM SIGKILL
+echo "Use Control-C to stop container"
+
+[ $# -gt 0 ] && exec "$@"
+sleep 1000000000

@@ -1,0 +1,18 @@
+#!/bin/bash
+# Example of creating a named network
+# This allocates a named subnet 192.168.66.0/24 'ml-docker' (NOTE: use .1/24 not .0 !!!) 
+#  --ip-range is like dhcp, if you dont specify an ip in docker run then it usese the ip-range
+# Run with --ip=192.168.66. 1-127  , docker will allocate .128+ 
+# Gateway is the outbound gateway IP 
+# Note: the network will stay around  until you remove it with 'docker network rm '
+# You can see it with 'docker network ls' as well as 'route' or 'routel' or 'ip route'
+# 
+
+docker network create --subnet 192.168.66.1/24 --driver bridge \
+   --ipv6 --gateway 192.168.66.1 --ip-range 192.168.66.128/25 ml-docker
+
+
+# Remove with 
+# docker network rm ml-docker
+#
+

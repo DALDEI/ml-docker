@@ -44,7 +44,7 @@ subprojects {
 
   task buildDockerfile(type: Dockerfile ) {
     description "Creates the docker files used for building the image in ${-> project.name}"
-    group 'docker'
+    group=null 
     from "${-> project.baseImage}"
     destFile = project.file("$buildDir/Dockerfile")
     maintainer "${userName} <$userEmail>"
@@ -52,27 +52,37 @@ subprojects {
    }
 
   task copyFiles( type: Copy ) {
+     group=null
      dependsOn buildDockerfile 
      from "resources"
      into buildDir
   }
 
   task buildImage(type:DockerBuildImage) {
-     group 'docker'
+     requiredProperty "imageName" 
+     requiredProperty "imageTag" 
+
+     group=null
+     description="Builds the docker image for $project.name"
      dependsOn buildDockerfile , copyFiles
      inputDir = buildDir
-     tag =  project.tag
+     tag =  "${project.imageName}:${project.imageTag}"
    }
 }
 
-project(":ml-runner").buildDockerfile.requiredProperty 'marklogicRpm'
-project(":ml-runner").buildImage.requiredProperty 'marklogicRpm'
-
-task buildRunner { 
-  dependsOn project(":ml-runner").buildImage
+project(":ml-runner") { 
+   buildDockerfile.requiredProperty 'marklogicRpm'
+   buildImage.requiredProperty 'marklogicRpm'
+   task buildRunner { 
+    dependsOn buildImage
+    description buildImage.description
+    group 'docker'
+  }
 }
-
-
-task buildBuilder { 
-  dependsOn project(":ml-builder").buildImage
+project(":ml-builder") {
+  task buildBuilder { 
+    dependsOn buildImage
+    group 'docker'
+    description buildImage.description
+  }
 }

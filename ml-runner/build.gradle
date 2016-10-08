@@ -8,19 +8,22 @@ buildDockerfile {
   // Use exact path in /tmp to bust cach  
   addFile "$marklogicRpm","/tmp/$marklogicRpm"
   addFile "libsasl.tar","/usr/lib64"
-  addFile "supervisord.conf","/etc/supervisord.conf"
+  addFile "ml-run" , "/usr/local/bin"
   environmentVariable "MARKLOGIC_EC2_HOST","0"  
   runCommand { [ 'set -vx',
+      "yum -y install systemd",
       "yum -y install /tmp/${project.marklogicRpm}" ,
       "rm -f /tmp/${project.marklogicRpm}",
       'yum clean all',
       'rm -rf /tmp/* /root/.history',
       'mkdir /var/opt/MarkLogic',
       'chown daemon.daemon /var/opt/MarkLogic',
-      'chmod ug+rwx /var/opt/MarkLogic'
+      'chmod ug+rwx /var/opt/MarkLogic',
+      'chmod ug+rwx /usr/local/bin/ml-run'
       ].join(' &&\\\n  ') }
   volume  "/var/opt/MarkLogic" 
   exposePort 7997,7998,7999,8000,8001,8002,8003,8004,8005,8006,8007,8008,8009,8010
-  defaultCommand "/usr/bin/supervisord","-c","/etc/supervisord.conf"
+  entryPoint "/bin/sh" , "-c" 
+  defaultCommand "/usr/local/bin/ml-run"
 }
 

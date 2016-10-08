@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# Run a single ML instance in the named network
+# This will get an address from .128+ 
+# You can find the addres with 'docker inspect ml-run-xxx 
+# You can watch the logs with  docker logs ml-run-$$ -f 
+# If attached then a control-C or other signal will gracefully shutdown
+name=${1:-ml-run-$$}
+shift
+
+echo "Starting ml-runner: $name"
+docker run -itd --net=ml-docker -P -v /dev/log:/dev/log --name=$name \
+   --hostname=$name ml-runner "$@" || { echo "Error starting runner:$?" ; exit 1; }
+
+echo -n "Started runner on ip: "
+echo -n "IP Address: " 
+docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $name 

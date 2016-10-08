@@ -17,13 +17,15 @@ if ! [ -d  $devtools/.git ]  ; then
    find $devtools -name '*.sh' -exec chmod +x {} \; 
 fi 
 
+$rpmtools/refreshcache.sh
+
 # Get the URL
 if [ -x $rpmtools/getbuild-url.sh ]  ; then 
   url=$($rpmtools/getbuild-url.sh ${build} $platform)
   if [ -n "$url" ] ; then 
      echo "RPM located at $url"
      rpm=$(basename "$url")
-     runrpm="runner/resources/$rpm"
+     runrpm="ml-runner/resources/$rpm"
      devrpm="$rpmtools/_out/$rpm"
      [ -s "$devrpm" -a ! -f "$runrpm" ] && ln "$devrpm" "$runrpm" 
      if [ -s "$runrpm" ] ;then 
@@ -40,7 +42,7 @@ fi
 if [ -f "$runrpm" ] ;then 
    echo "using RPM $rpm in $runrpm" 
    ls -l $runrpm
-   printf "marklogicRpm=$rpm\n" > runner/gradle-local.properties 
+   printf "marklogicRpm=$rpm\n" > ml-runner/gradle-local.properties 
 else 
   echo "Cannot find an rpm"
   exit 1;

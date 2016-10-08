@@ -1,17 +1,19 @@
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+import com.bmuschko.gradle.docker.tasks.image.*
+docker {
+ registryCredentials { 
+    url = 'https://index.docker.io/v1'
+    username = registryUser
+    password = registryPassword
+    email = 'dlee@calldei.com'
+  }
+} 
 
 buildDockerfile {
 
-  // Use /tmp to avoid increasing the filesystem size
-  // Use exact path in /tmp to bust cach  
-  addFile 'supervisord.conf','/etc/supervisord.conf'
-
   // Use a single RUN command for multiple commands to limit image sizes
   runCommand { [ 
-      'yum -y install python-setuptools lsb initscripts sudo python34',
-      'easy_install supervisor',
+      'yum -y install deltarpm',
+      'yum -y install python-setuptools lsb initscripts sudo python34 systemd',
       'curl https://bootstrap.pypa.io/get-pip.py | python3.4' ].join(' &&\\\n  ') }
 
   // Last 2 are for the python API
