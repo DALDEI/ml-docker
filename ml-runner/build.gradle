@@ -9,6 +9,7 @@ buildDockerfile {
   addFile "$marklogicRpm","/tmp/$marklogicRpm"
   addFile "libsasl.tar","/usr/lib64"
   addFile "ml-run" , "/usr/local/bin"
+  addFile "marklogic.conf" , "/etc/marklogic.conf"
   environmentVariable "MARKLOGIC_EC2_HOST","0"  
   runCommand { [ 'set -vx',
       "yum -y install systemd",

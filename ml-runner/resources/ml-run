@@ -13,7 +13,6 @@ function stopml()
   done
   exit 0
 }
-
 trap 'service MarkLogic stop' SIGINT SIGHUP SIGTERM SIGKILL
 service MarkLogic start 
 sleep 5

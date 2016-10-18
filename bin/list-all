@@ -1,0 +1,4 @@
+#!/bin/bash
+filter=""
+[ $# -gt 0 ] && filter="--filter=network=$1"
+docker ps $filter -a --format="{{.Names}}" 
