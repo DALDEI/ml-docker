@@ -1,0 +1,9 @@
+#!/bin/bash
+for host ;  do
+  echo -n "Stopping... "
+  docker stop "$host"
+done
+for host ; do
+  echo -n "Removing... "
+  docker rm "$host" 
+done
