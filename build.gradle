@@ -86,3 +86,19 @@ project(":ml-builder") {
     description buildImage.description
   }
 }
+
+help <<  {
+  println """
+
+Configuration: 
+  create a file 'gradle-local.properties' 
+  Copy your licensed  MarkLogic rpm into ml-runner/resources 
+  Edit the marklogicRpm property in gradle-local.properties
+  
+Run:
+  ./gradlew buildRunner   -- Builds ml-runner -- a docker image that runs MarkLogic
+  ./gradlew buildBuilder  -- Builds ml-builder -- a docker image which contains a build environment
+        
+"""
+}
+
