@@ -9,20 +9,13 @@ name=${1:?"Usage: $0 runner-name [network]"}
 shift
 network=${1:-${DOCKER_NETWORK:?"Usage: $0 runner-name [network or \$DOCKER_NETWORK]"}}
 [ $# -gt 0 ]  && shift 
+ROOT=${ROOT:-$(readlink -e $(dirname $0))}
 
-image=ml-runner
+image=${MARKLOGIC_IMAGE:-ml-runner}
 
 # Check if there is an IP listed for name
 
-findip() {
-  if which resolveip >/dev/null 2>&1 ; then 
-     resolveip -s $1
-  elif which getent >/dev/null 2>&1 ; then 
-     getent host $1 | awk '{ print $1 ; }'
-   fi
-}
-
-ip=$(findip $name )
+ip=$($ROOT/findip $name )
 [ -n "$ip" ]  && setip="--ip=$ip"
 
 echo "Starting ml-runner: $name"

@@ -23,7 +23,7 @@ buildDockerfile {
       '/usr/bin/pip3 install requests requests-toolbelt ',
       '/usr/bin/pip3 install marklogic_python_api -i https://testpypi.python.org/pypi' ].join(' &&\\\n ') }
 
-  defaultCommand  "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" 
+  defaultCommand  "/bin/bash"
 }
 
 task pushImage(type:DockerPushImage) { 
