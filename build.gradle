@@ -7,7 +7,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 buildscript {
   repositories { jcenter() }
-  dependencies { 
+  dependencies {
     classpath 'net.saliman:gradle-properties-plugin:1.4.4'
     classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
   }
@@ -15,7 +15,7 @@ buildscript {
 
 allprojects {
   apply plugin: 'net.saliman.properties'
-  task clean(type: Delete){ 
+  task clean(type: Delete){
     delete project.buildDir
     delete "_out"
     delete file(".").listFiles().findAll { it =~ /.*~/}
@@ -27,7 +27,7 @@ allprojects {
 subprojects {
   buildscript {
     repositories { jcenter() }
-    dependencies { 
+    dependencies {
       classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
       classpath 'net.saliman:gradle-properties-plugin:1.4.4'
     }
@@ -35,16 +35,16 @@ subprojects {
   apply plugin: 'com.bmuschko.docker-remote-api'
   docker {
    if( System.env.DOCKER_HOST != null ) {
-      url = System.env.DOCKER_HOST 
+      url = System.env.DOCKER_HOST
    }
    if( System.env.DOCKER_TLS_VERIFY != null ) {
       certPath = new File( System.env.DOCKER_CERT_PATH )
     }
-  } 
+  }
 
   task buildDockerfile(type: Dockerfile ) {
     description "Creates the docker files used for building the image in ${-> project.name}"
-    group=null 
+    group=null
     from "${-> project.baseImage}"
     destFile = project.file("$buildDir/Dockerfile")
     maintainer "${userName} <$userEmail>"
@@ -53,14 +53,14 @@ subprojects {
 
   task copyFiles( type: Copy ) {
      group=null
-     dependsOn buildDockerfile 
+     dependsOn buildDockerfile
      from "resources"
      into buildDir
   }
 
   task buildImage(type:DockerBuildImage) {
-     requiredProperty "imageName" 
-     requiredProperty "imageTag" 
+     requiredProperty "imageName"
+     requiredProperty "imageTag"
 
      group=null
      description="Builds the docker image for $project.name"
@@ -70,17 +70,17 @@ subprojects {
    }
 }
 
-project(":ml-runner") { 
+project(":ml-runner") {
    buildDockerfile.requiredProperty 'marklogicRpm'
    buildImage.requiredProperty 'marklogicRpm'
-   task buildRunner { 
+   task buildRunner {
     dependsOn buildImage
     description buildImage.description
     group 'docker'
   }
 }
 project(":ml-builder") {
-  task buildBuilder { 
+  task buildBuilder {
     dependsOn buildImage
     group 'docker'
     description buildImage.description
@@ -90,15 +90,15 @@ project(":ml-builder") {
 help <<  {
   println """
 
-Configuration: 
-  create a file 'gradle-local.properties' 
-  Copy your licensed  MarkLogic rpm into ml-runner/resources 
+Configuration:
+  create a file 'gradle-local.properties'
+  Copy your licensed  MarkLogic rpm into ml-runner/resources
   Edit the marklogicRpm property in gradle-local.properties
-  
+
 Run:
   ./gradlew buildRunner   -- Builds ml-runner -- a docker image that runs MarkLogic
   ./gradlew buildBuilder  -- Builds ml-builder -- a docker image which contains a build environment
-        
+
 """
 }
 

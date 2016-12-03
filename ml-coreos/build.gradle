@@ -12,16 +12,22 @@ buildDockerfile {
 
   // Use a single RUN command for multiple commands to limit image sizes
   runCommand { [ 
+      'yum makecache fast',
       'yum -y install deltarpm',
       'yum -y install python-setuptools lsb initscripts sudo python34 systemd',
-      'curl https://bootstrap.pypa.io/get-pip.py | python3.4' ].join(' &&\\\n  ') }
+      'curl https://bootstrap.pypa.io/get-pip.py | python3.4',
+      "yum -y install systemd",
+      'yum -y update' , 
+      'yum clean packages'
+    ].join(' &&\\\n  ') }
 
   // Last 2 are for the python API
   // if you don't need or want the Python tools', 
   runCommand  { [ 
       '/usr/bin/pip3 install --upgrade pip ',
       '/usr/bin/pip3 install requests requests-toolbelt ',
-      '/usr/bin/pip3 install marklogic_python_api -i https://testpypi.python.org/pypi' ].join(' &&\\\n ') }
+      '/usr/bin/pip3 install marklogic_python_api -i https://testpypi.python.org/pypi' ,
+      '(rm -rf /tmp/* 2>/dev/null|| true)' ].join(' &&\\\n ') }
 
   defaultCommand  "/bin/bash"
 }

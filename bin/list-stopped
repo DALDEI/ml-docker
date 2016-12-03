@@ -1,2 +1,2 @@
 #!/bin/bash
-docker ps --format="{{.Names}}"
+docker ps -f status=exited --format="{{.Names}}"

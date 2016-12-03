@@ -1,6 +1,9 @@
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
+ext {
+  cacheBust = new Date()
+}
 
 buildDockerfile {
 
@@ -12,10 +15,10 @@ buildDockerfile {
   addFile "marklogic.conf" , "/etc/marklogic.conf"
   environmentVariable "MARKLOGIC_EC2_HOST","0"  
   runCommand { [ 'set -vx',
-      "yum -y install systemd",
+      "echo ${cacheBust}",
       "yum -y install /tmp/${project.marklogicRpm}" ,
       "rm -f /tmp/${project.marklogicRpm}",
-      'yum clean all',
+      'yum clean packages',
       'rm -rf /tmp/* /root/.history',
       'mkdir /var/opt/MarkLogic',
       'chown daemon.daemon /var/opt/MarkLogic',
