@@ -20,8 +20,8 @@ fi
 #$rpmtools/refreshcache.sh
 
 # Get the URL
-if [ -x $rpmtools/getbuild-url.sh ]  ; then 
-  url=$($rpmtools/getbuild-url.sh ${build} $platform)
+if [ -x $rpmtools/getbuild-url ]  ; then 
+  url=$($rpmtools/getbuild-url ${build} $platform)
   if [ -n "$url" ] ; then 
      echo "RPM located at $url"
      rpm=$(basename "$url")
