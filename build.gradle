@@ -87,7 +87,8 @@ project(":ml-builder") {
   }
 }
 
-help <<  {
+help {
+  doLast  {
   println """
 
 Configuration:
@@ -100,5 +101,6 @@ Run:
   ./gradlew buildBuilder  -- Builds ml-builder -- a docker image which contains a build environment
 
 """
+}
 }
 
