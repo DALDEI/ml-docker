@@ -1,9 +1,14 @@
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
+ext {
+  cacheBust = new Date()
+}
+
 buildDockerfile {
  addFile "ml-run" , "/usr/local/bin"
  runCommand { [ 
+   "echo ${cacheBust}",
    'yum groups mark install "Development Tools"',
    'yum groups mark convert "Development Tools"',
    'yum groupinstall -y "Development tools"', 

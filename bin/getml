@@ -17,7 +17,7 @@ if ! [ -d  $devtools/.git ]  ; then
    find $devtools -name '*.sh' -exec chmod +x {} \; 
 fi 
 
-$rpmtools/refreshcache.sh
+#$rpmtools/refreshcache.sh
 
 # Get the URL
 if [ -x $rpmtools/getbuild-url.sh ]  ; then 
@@ -25,11 +25,15 @@ if [ -x $rpmtools/getbuild-url.sh ]  ; then
   if [ -n "$url" ] ; then 
      echo "RPM located at $url"
      rpm=$(basename "$url")
+     echo saving ml-runner/resources
+     rm -rf ml-runner/resources.save
+     cp -prl ml-runner/resources ml-runner/resources.save
+     rm -rf ml-runner/resources/*.rpm
      runrpm="ml-runner/resources/$rpm"
      devrpm="$rpmtools/_out/$rpm"
      [ -s "$devrpm" -a ! -f "$runrpm" ] && ln "$devrpm" "$runrpm" 
      if [ -s "$runrpm" ] ;then 
-        echo "RPM $rpm already exists in $runrpm" 
+        echo "RPM $rpm already found -- using $devrpm for $runrpm"
     else 
       # Get the actual RPM
       $rpmtools/getbuild.sh ${build} $platform

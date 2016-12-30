@@ -26,7 +26,8 @@ range=${subnet%.0}.128/25
 gateway=${subnet%.0}.1
 
 docker network create --subnet $sub --driver bridge \
-   --ipv6 --gateway $gateway --ip-range $range $net
+   --gateway $gateway --ip-range $range $net
+   #--ipv6 --gateway $gateway --ip-range $range $net
 docker network inspect $net
 
 # Remove with 
