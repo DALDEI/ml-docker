@@ -12,6 +12,8 @@ for host ; do
   $ROOT/run-runner "$host" "$network" 
 done
 
+echo Sleeping...
+sleep 10
 echo "Joining cluster"
 python3.4 $ROOT/make-cluster.py --credentials admin:admin --host $*
 
