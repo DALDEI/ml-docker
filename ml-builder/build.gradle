@@ -11,7 +11,7 @@ buildDockerfile {
    "echo ${cacheBust}",
    'yum groups mark install "Development Tools"',
    'yum groups mark convert "Development Tools"',
-   'yum groupinstall -y "Development tools"', 
+   'yum groupinstall -y "Development Tools"', 
    "yum install -y \
       auto-buildrequires \
       bison \

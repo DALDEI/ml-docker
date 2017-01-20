@@ -9,7 +9,7 @@ ROOT=${ROOT:-$(readlink -e $(dirname $0))}
 
 echo "Starting up hosts"
 for host ; do
-  $ROOT/run-runner "$host" "$network" 
+  $ROOT/run-runner "$network" "$host" 
 done
 
 echo Sleeping...

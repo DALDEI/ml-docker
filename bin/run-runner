@@ -5,10 +5,9 @@
 # You can find the addres with 'docker inspect ml-run-xxx 
 # You can watch the logs with  docker logs ml-run-$$ -f 
 # If attached then a control-C or other signal will gracefully shutdown
-name=${1:?"Usage: $0 runner-name [network]"}
-shift
-network=${1:-${DOCKER_NETWORK:?"Usage: $0 runner-name [network or \$DOCKER_NETWORK]"}}
-[ $# -gt 0 ]  && shift 
+network=${1:?"Usage: $0 network runner-name "}
+name=${2:?"Usage: $0 network runner-name"}
+shift 2
 ROOT=${ROOT:-$(readlink -e $(dirname $0))}
 
 image=${MARKLOGIC_IMAGE:-ml-runner}
@@ -18,9 +17,17 @@ image=${MARKLOGIC_IMAGE:-ml-runner}
 ip=$($ROOT/findip $name )
 [ -n "$ip" ]  && setip="--ip=$ip"
 
+myhost=$(hostname)
+myip=$(hostname -i)
+
+[ -n "$myhost" -a -n "$myip" ] && addhost="--add-host $myhost:$myip"
+
 echo "Starting ml-runner: $name"
-docker run -itd "--net=$network" $setip -v /dev/log:/dev/log --name=$name \
-   --hostname=$name -e MARKLOGIC_HOSTNAME=$name  -P "$@" "$image" || { echo "Error starting runner:$?" ; exit 1; }
+docker run -itd "--net=$network" $setip \
+    -v /dev/log:/dev/log --name=$name \
+    $addhost   \
+   --hostname=$name -e MARKLOGIC_HOSTNAME=$name  \
+   -P "$@" "$image" || { echo "Error starting runner:$?" ; exit 1; }
 
 echo -n "Started runner on ip: "
 docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $name 

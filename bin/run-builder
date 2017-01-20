@@ -3,10 +3,9 @@
 # Run builder linking against your home directory 
 # This only works if docker is local or if the remote docker server is similarly configured
 #
-name=${1:?"Usage: $0 runner-name [network]"}
-shift
-network=${1:-${DOCKER_NETWORK:?"Usage: $0 runner-name [network or \$DOCKER_NETWORK]"}}
-[ $# -gt 0 ]  && shift 
+network=${1:?"Usage: $0 network runner-name "}
+name=${2:?"Usage: $0 network runner-name"}
+shift 2
 ROOT=${ROOT:-$(readlink -e $(dirname $0))}
 shift
 
@@ -16,10 +15,14 @@ image=ml-builder
 ip=$($ROOT/findip $name )
 [ -n "$ip" ]  && setip="--ip=$ip"
 
+myhost=$(hostname)
+[ -n "$myhost" ] && addhost="--add-host $myhost:$(hostname $myhost)"
 
 exec docker run -it --rm --net=$network $setip --name $name \
-  -v $HOME:$HOME  --hostname "$name" --name "$name"  -v /etc/passwd:/etc/passwd -v /etc/groups:/etc/groups \
+  -v $HOME:$HOME  --hostname "$name" --name "$name"  \
+  -v /etc/passwd:/etc/passwd -v /etc/groups:/etc/groups \
   -e MARKLOGIC_HOSTNAME=$name  -P \
+  $addhost \
   --user=$UID "$image" /bin/bash -l 
 echo -n "IP Address: " 
 docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $name 

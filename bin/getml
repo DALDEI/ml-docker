@@ -14,7 +14,6 @@ export devtools=eng-dev-tools
 export rpmtools="$devtools/rpmtools"
 if ! [ -d  $devtools/.git ]  ; then 
    git clone $repo 
-   find $devtools -name '*.sh' -exec chmod +x {} \; 
 fi 
 
 #$rpmtools/refreshcache.sh
@@ -36,7 +35,7 @@ if [ -x $rpmtools/getbuild-url ]  ; then
         echo "RPM $rpm already found -- using $devrpm for $runrpm"
     else 
       # Get the actual RPM
-      $rpmtools/getbuild.sh ${build} $platform
+      $rpmtools/getbuild ${build} $platform
       [ -f "$devrpm" ] && ln "$devrpm" "$runrpm" 
     fi
   fi
