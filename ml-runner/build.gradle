@@ -5,7 +5,23 @@ ext {
   cacheBust = new Date()
 }
 
+task init {
+ requiredProperty 'marklogicRpm'
+ def file= "$projectDir/resources/$marklogicRpm"
+ doLast { task ->
+   if( !project.file("$projectDir/resources/$marklogicRpm").exists() ) {
+     throw new TaskExecutionException( task , 
+        new Exception("""Property: marklogicRpm - file $file does not exist.
+set the marklogicRpm property in $projectDir/gradle-local.properties to the basename of the RPM in the resources directory
+"""))
+    }
+  }
+
+}
+
+
 buildDockerfile {
+  dependsOn project.init
 
   // Use /tmp to avoid increasing the filesystem size
   // Use exact path in /tmp to bust cach  
