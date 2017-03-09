@@ -31,7 +31,7 @@ buildDockerfile {
   addFile "marklogic.conf" , "/etc/marklogic.conf"
   environmentVariable "MARKLOGIC_EC2_HOST","0"  
   runCommand { [ 'set -vx',
-      "echo ${cacheBust}",
+      "echo '${cacheBust}'",
       "yum -y install /tmp/${project.marklogicRpm}" ,
       "rm -f /tmp/${project.marklogicRpm}",
       'yum clean packages',
@@ -46,4 +46,4 @@ buildDockerfile {
   entryPoint "/bin/sh" , "-c" 
   defaultCommand "/usr/local/bin/ml-run"
 }
-
+buildRunner.dependsOn clean

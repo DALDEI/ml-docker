@@ -1,0 +1,42 @@
+import com.bmuschko.gradle.docker.tasks.image.*
+docker {
+ registryCredentials { 
+    url = 'https://index.docker.io/v1'
+    username = registryUser
+    password = registryPassword
+    email = 'dlee@calldei.com'
+  }
+} 
+
+buildDockerfile {
+
+  // Use a single RUN command for multiple commands to limit image sizes
+  runCommand { [ 
+      'yum makecache fast',
+      'yum -y update',
+      'yum -y install deltarpm python34',
+      'curl https://bootstrap.pypa.io/get-pip.py | python3',
+  // MarkLogic.rpm dependencies installed to make ml-runner a  smaller delta
+     'yum -y install lsb-core-amd64 gdb glibc libgcc48 libstdc++'
+      ].join(' &&\\\n ') }
+
+  // Last 2 are for the python API
+  // if you don't need or want the Python tools', 
+  runCommand  { [ 
+      'pip3 install --upgrade pip ',
+      'pip3 install requests requests-toolbelt ',
+      'pip3 install marklogic_python_api -i https://testpypi.python.org/pypi' ,
+      'yum -y update' , 
+      'yum clean packages',
+      '(rm -rf /tmp/* 2>/dev/null|| true)' 
+     ].join(' &&\\\n ') }
+
+  defaultCommand  "/bin/bash"
+}
+
+task pushImage(type:DockerPushImage) { 
+  dependsOn buildImage
+  imageName = project.imageName
+  tag = project.imageTag
+
+}

@@ -1,0 +1,4 @@
+This build is published to docker hub as 'daldei/ml-coreos'.
+If you want to rebuild it run "gradle buildImage"
+The "pushImage" task is included for the convenience of the maintaner, or if you provide your own docker repository.
+To 'push' the image to your own repository edit gradle.properties and change the tag to match your repo.

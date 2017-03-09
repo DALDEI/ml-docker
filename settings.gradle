@@ -1,2 +1,2 @@
-include 'ml-coreos', 'ml-runner' , 'ml-builder'
+include 'ml-coreos', 'ml-runner' , 'ml-builder','ml-awslinux'
 rootProject.name='ml-gradle'
