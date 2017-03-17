@@ -1,8 +1,6 @@
-gradle-local.properties
-*~
 *.rpm
-.gradle
-.git
-_out
-_wiki
-eng-dev-tools
+*~
+/*/build/
+/.gradle
+/.python-version
+/gradle-local.properties
