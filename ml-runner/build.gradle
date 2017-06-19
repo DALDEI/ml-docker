@@ -3,16 +3,26 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 ext {
   cacheBust = new Date()
+  marklogicRpmName = ""
 }
 
 task init {
  requiredProperty 'marklogicRpm'
- def file= "$projectDir/resources/$marklogicRpm"
  doLast { task ->
-   if( !project.file("$projectDir/resources/$marklogicRpm").exists() ) {
+   def resdir= "$projectDir/resources"
+   def file=project.file("$marklogicRpm")
+   marklogicRpmName = file.name 
+   def resfile = project.file( "$resdir/$marklogicRpmName") 
+   if( file != resfile && file.exists( ) )
+      project.copy { 
+          from file 
+          into resdir
+      }
+   
+   if( !resfile.exists() ){
      throw new TaskExecutionException( task , 
-        new Exception("""Property: marklogicRpm - file $file does not exist.
-set the marklogicRpm property in $projectDir/gradle-local.properties to the basename of the RPM in the resources directory
+        new Exception("""Property: marklogicRpm - file $resfile does not exist.
+set the marklogicRpm property in $projectDir/gradle-local.properties to path of a MarkLogic RPM
 """))
     }
   }
@@ -25,15 +35,17 @@ buildDockerfile {
 
   // Use /tmp to avoid increasing the filesystem size
   // Use exact path in /tmp to bust cach  
-  addFile "$marklogicRpm","/tmp/$marklogicRpm"
+  doFirst {
+     println "${->project.marklogicRpmName} /tmp/${->project.marklogicRpmName}"
+  addFile "${->project.marklogicRpmName}", "/tmp/${->project.marklogicRpmName}"
   addFile "libsasl.tar","/usr/lib64"
   addFile "ml-run" , "/usr/local/bin"
   addFile "marklogic.conf" , "/etc/marklogic.conf"
   environmentVariable "MARKLOGIC_EC2_HOST","0"  
   runCommand { [ 'set -vx',
       "echo '${cacheBust}'",
-      "yum -y install /tmp/${project.marklogicRpm}" ,
-      "rm -f /tmp/${project.marklogicRpm}",
+      "yum -y install /tmp/${project.marklogicRpmName}" ,
+      "rm -f /tmp/${project.marklogicRpmName}",
       'yum clean packages',
       'rm -rf /tmp/* /root/.history',
       'mkdir /var/opt/MarkLogic',
@@ -45,5 +57,6 @@ buildDockerfile {
   exposePort 7997,7998,7999,8000,8001,8002,8003,8004,8005,8006,8007,8008,8009,8010
   entryPoint "/bin/sh" , "-c" 
   defaultCommand "/usr/local/bin/ml-run"
+ }
 }
 buildRunner.dependsOn clean

@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# Update the MarkLogic install in a running cluster 
+set -e
+usage="Usage: $0 network rpm runner-name..."
+ROOT=${ROOT:-$(readlink -e $(dirname $0))}
+network=${1:?$usage}
+rpm=${2:?$usage}
+[ -f "$rpm" ] || { echo "cannot find $rpm\n$usage" ; exit 1;}
+shift 2;
+[ $# -gt 0 ]  || { echo "$usage"  ; exit 2;  }
+
+function drun() {
+  local name="$1" ; 
+  shift 
+  docker exec -it "$name" /bin/bash -c  "$@"
+}
+
+# Check if there is an IP listed for name
+base=$(basename $rpm)
+for name ; do
+  echo "Updating ml-runner: $name with rpm: $rpm"
+  echo "Currently running process and RPM"
+  drun "$name" "ps -ea ;rpm -qa| grep MarkLogic" 
+  docker cp "$rpm" "$name:/tmp/$base"
+  drun "$name"  "service MarkLogic stop && rpm -e MarkLogic && \
+    rpm -i /tmp/$base && rm -f /tmp/$base && service MarkLogic start" 
+  echo "Updated running process and RPM"
+  drun "$name" "ps -ea ; rpm -qa| grep MarkLogic" 
+done

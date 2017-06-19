@@ -2,5 +2,5 @@
 if which resolveip >/dev/null 2>&1 ; then 
    resolveip -s $1
 elif which getent >/dev/null 2>&1 ; then 
-   getent host $1 | awk '{ print $1 ; }'
+   getent hosts $1 | awk '{ print $1 ; }'
 fi

@@ -5,9 +5,10 @@
 # You can find the addres with 'docker inspect ml-run-xxx 
 # You can watch the logs with  docker logs ml-run-$$ -f 
 # If attached then a control-C or other signal will gracefully shutdown
-network=${1:?"Usage: $0 network runner-name "}
-name=${2:?"Usage: $0 network runner-name"}
+network=${1:?"Usage: $0 network runner-name [docker-opts]"}
+name=${2:?"Usage: $0 network runner-name [docker-opts]"}
 shift 2
+
 ROOT=${ROOT:-$(readlink -e $(dirname $0))}
 
 image=${MARKLOGIC_IMAGE:-ml-runner}
