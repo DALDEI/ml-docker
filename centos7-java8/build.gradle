@@ -5,7 +5,7 @@ buildscript {
   repositories { jcenter() }
   dependencies { 
     classpath 'net.saliman:gradle-properties-plugin:1.4.4'
-    classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
+    classpath 'com.bmuschko:gradle-docker-plugin:3.0.8'
   }
 }
 
