@@ -70,3 +70,16 @@ Usage:
 This builds one of 3 variants. You must build `coreos` first. If you specify
 a tag for the `coreos` image, then you’ll have to modify the `Dockerfiles` for
 the other images.
+
+## Versions and License
+Not affilliated with MarkLogic Inc nor included with any MarkLogic, Inc. Software.
+
+Tested with community developer editions of MarkLogic version 7x 8x and 9x.  Please open an issue if you have problems.
+
+See LICENSE file for BSD 3-clause license details.  
+
+Executive NonLaywer Overview:  Use this software and the source for anything you want, modified or not, comercial or private, paid or free, dont blame me if it doesnt work, you cannot prevent me or others from the same. Enjoy.
+Free as in 'Just Free, take it or leave it'.
+Maybe 'Free as in Beer' (tm)(c)(R)(wtf) -- but I couldnt ever figure out those fancypants lawyer terms, they seem to mean the opposite of what they seem to mean the opposite of what they seem to mean, or the other way around.
+
+
